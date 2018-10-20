@@ -8,19 +8,25 @@ model = KeyedVectors.load_word2vec_format('wiki.de.vec')
 class FastTextEmbeddings():
     def __init__(self, text):
         self.text = text
-        self.tokens = nltk.word_tokenize(text)
+        try:
+            self.tokens = nltk.word_tokenize(text)
+        except:
+            self.tokens = None
+            #print(self.text)
 
     @staticmethod
     def _getVectorsOf(tokens):
         vectors = []
         for token in tokens:
             try:
-                print(re.sub('[^A-Za-z0-9]+', '', token))
                 vectors.append(model.get_vector(re.sub('[^A-Za-z0-9]+', '', token).lower()))
             except:
-                print(token)
+                #print(token)
                 pass
         return vectors
 
     def getMeanEmbedding(self):
-        return np.array(FastTextEmbeddings._getVectorsOf(self.tokens)).mean(axis=0)
+        if self.tokens is None:
+            return None
+        else:
+            return np.array(FastTextEmbeddings._getVectorsOf(self.tokens)).mean(axis=0)
