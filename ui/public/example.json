@@ -23,17 +23,15 @@
     "https://usertimes.de/wp-content/uploads/2018/03/Team_alt.jpg"
   ],
   "size": 6,
-  "wz": [
-    {
-      "section": "L",
-      "code": "6831",
-      "probability": 0.73
+  "wz": {
+    "section": {
+      "probability": [0.1, 0.3, 0.4, 0.2],
+      "classes": ["A", "B", "C", "D"]
     },
-    {
-      "section": "K",
-      "code": "6420",
-      "probability": 0.12
+    "code": {
+      "probability": [0.1, 0.3, 0.4, 0.2],
+      "classes": ["6831", "6420", "6241", "6242"]
     }
-  ]
+  }
 
 }
