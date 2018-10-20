@@ -5,6 +5,11 @@ name = "pypi"
 
 [packages]
 flask = "*"
+tensorflow = ">=1.7"
+tensorflow-hub = "*"
+jupyterlab = "*"
+numpy = "*"
+nltk = "*"
 
 [dev-packages]
 
