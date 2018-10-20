@@ -1,14 +1,18 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import { Container, Form, Header, Image, Loader } from 'semantic-ui-react';
+import { Container, Form, Header, Image, Loader, Table, Icon, Flag } from 'semantic-ui-react';
 import './App.css';
 import { getDataFromUrl } from './services/api';
 import PageMenu from './components/PageMenu';
 import { APP_NAME } from './config/constants';
+import SocialButtons from './components/SocialButtons';
+import Tags from './components/Tags';
+
+const DEBUG = false;
 
 
 class EmailInput extends Component {
-  state = { value: 'timo@usertimes.io' };
+  state = { value: DEBUG ? 'timo@usertimes.io' : '' };
 
   static propTypes = {
     onData: PropTypes.func,
@@ -62,11 +66,131 @@ class EmailInput extends Component {
 class Footer extends Component {
   render() {
     return (
-      <Container textAlign='center' style={{ marginTop: 80 }}>
+      <Container textAlign='center' style={{ marginTop: 80, marginBottom: 20 }}>
         &copy; leadif.ai – originated from the AI challenge by
         <Image src='images/uniserve.png' centered />
       </Container>
     )
+  }
+}
+
+class WZ extends Component {
+  render() {
+    const { data } = this.props;
+
+    const getTop3 = (code) => code.classes
+      .map((c, idx) => ({
+        probability: code.probabilities[idx],
+        class: c
+      }))
+      .sort((a, b) => b.probability - a.probability)
+      .filter((_, idx) => idx < 3);
+
+    const sections = getTop3(data.section);
+    const codes = getTop3(data.code);
+
+    // return JSON.stringify(sections, null, 2)
+    return (
+      <Table celled collapsing basic='very' compact>
+        <Table.Body>
+          { sections.map((section, idx) => (
+            <Table.Row key={idx}>
+              <Table.Cell>
+                <strong>{ section.class }</strong>
+              </Table.Cell>
+              <Table.Cell>
+                { Math.round(section.probability * 100) }%
+              </Table.Cell>
+            </Table.Row>
+          ))}
+        </Table.Body>
+      </Table>
+    )
+  }
+}
+
+class DataTable extends Component {
+  static propTypes = {
+    data: PropTypes.object.isRequired
+  }
+
+  render() {
+    const { data } = this.props;
+    let { company, url } = data;
+
+    // Use the URL as fallback for the name.
+    company = company || url;
+
+    const rows = [
+      {
+        key: 'WZ',
+        value: data.wz && <WZ data={data.wz} />
+      },
+      {
+        key: 'Address',
+        value: data.address[0] && (
+          <span>
+            { data.address[0].street } <br/>
+            { data.address[0].city } <br/>
+            { data.address[0].phone } <br/>
+          </span>
+        )
+      },
+      {
+        key: 'Number of employees',
+        value: data.size
+      },
+      {
+        key: 'Language',
+        value: data.language && (
+          <span>
+            <Flag name={data.language} style={{ marginRight: 8 }} />
+            { data.language.toUpperCase() }
+          </span>
+        )
+      },
+      {
+        key: 'Social',
+        value: data.social && <SocialButtons accounts={data.social} />
+      },
+      {
+        key: 'Tags',
+        value: data.tags && <Tags tags={data.tags} />
+      },
+    ];
+
+    return (
+      <Table> 
+        <Table.Header>
+          <Table.Row>
+            <Table.HeaderCell colSpan='2'>
+              { company }
+              <a href={url} style={{ marginLeft: 8 }}>
+                <Icon name='external' style={{ color: '#ddd' }} />
+              </a>
+            </Table.HeaderCell>
+          </Table.Row>
+        </Table.Header>  
+        <Table.Body>
+
+          {
+            rows
+              .filter(row => !!row.value)
+              .map((row, idx) => (
+                <Table.Row key={idx}>
+                  <Table.Cell collapsing>
+                    <strong>{ row.key }</strong>
+                  </Table.Cell>
+                  <Table.Cell>
+                    { row.value }
+                  </Table.Cell>
+                </Table.Row>    
+              ))
+          }
+
+        </Table.Body>
+      </Table>
+    );
   }
 }
 
@@ -114,7 +238,11 @@ class App extends Component {
           }
 
           {
-            data && <pre>{ JSON.stringify(data) }</pre>
+            data && <DataTable data={data} />
+          }
+
+          {
+            DEBUG && data && <pre>{ JSON.stringify(data, null, 2) }</pre>
           }
 
 

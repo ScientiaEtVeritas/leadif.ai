@@ -4,14 +4,15 @@
   "address": [
     {
       "street": "Haid-und-Neu-Str. 7",
+      "city": "Karlsruhe",
       "country": "de",
-      "phone": "+49 721 9819 2925",
+      "phone": "+49 721 9819 2925"
     }
   ],
   "language": "de",
   "social": {
-    "twitter": "twitter.com/usertimeshq",
-    "facebook": "facebook.com/usertimeshq",
+    "twitter": "usertimeshq",
+    "facebook": "usertimeshq",
     "linkedin": "...",
     "xing": "..."
   },
@@ -25,11 +26,11 @@
   "size": 6,
   "wz": {
     "section": {
-      "probability": [0.1, 0.3, 0.4, 0.2],
+      "probabilities": [0.1, 0.3, 0.4, 0.2],
       "classes": ["A", "B", "C", "D"]
     },
     "code": {
-      "probability": [0.1, 0.3, 0.4, 0.2],
+      "probabilities": [0.1, 0.3, 0.4, 0.2],
       "classes": ["6831", "6420", "6241", "6242"]
     }
   }
