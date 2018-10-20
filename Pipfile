@@ -11,6 +11,8 @@ jupyterlab = "*"
 numpy = "*"
 nltk = "*"
 flask-cors = "*"
+gensim = "*"
+pandas = "*"
 
 [dev-packages]
 
