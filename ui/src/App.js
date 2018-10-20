@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 import './App.css';
 import { Button, Menu, Input, Container, Form } from 'semantic-ui-react';
 import { getDataFromUrl } from './services/api';
+import PropTypes from 'prop-types';
 
 class PageMenu extends Component {
   render() {
@@ -20,15 +21,23 @@ class PageMenu extends Component {
 class EmailInput extends Component {
   state = { value: 'timo@usertimes.io' };
 
-  onSubmit = () => {
+  static propTypes = {
+    onData: PropTypes.func
+  }
+
+  static propTypes = {
+    onData: () => {}
+  }
+
+  onSubmit = async () => {
     const { value } = this.state;
+    const { onData } = this.props;
     if (!value) return;
     const domain = value.split('@').pop();
     if (!domain) return;
     this.setState({ loading: true });
-    const data = getDataFromUrl(domain);
-
-    console.log('submit', domain, data);
+    const { data } = await getDataFromUrl(domain);
+    onData(data);
     this.setState({ loading: false });
   }
 
@@ -37,11 +46,12 @@ class EmailInput extends Component {
   }
 
   render() {
-    const { value, loading } = this.state;
+    const { value, loading} = this.state;
 
     return (
       <Form>
         <Form.Input
+          label='Enter an email address'
           action={{ icon: 'search', onClick: this.onSubmit }}
           fluid
           name='input'
@@ -57,13 +67,26 @@ class EmailInput extends Component {
 }
 
 class App extends Component {
+  state = {};
+
+  onData = data => {
+    this.setState({ data });
+  }
+
   render() {
+    const { data } = this.state;
+
     return (
       <div className="App">
         <PageMenu />
 
         <Container>
-          <EmailInput />
+          <EmailInput onData={this.onData} />
+
+          {
+            data && <pre>{ JSON.stringify(data) }</pre>
+          }
+
 
         </Container>
 
