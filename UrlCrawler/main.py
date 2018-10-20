@@ -4,8 +4,11 @@ import json
 import grequests
 import re
 import os
+import os.path
+import resource
+resource.setrlimit(resource.RLIMIT_NOFILE, (110000, 110000))
 
-INPUT_FILE_PATH = "/home/daniel/Downloads/daten/DEEPTECH-AI Hackathon Daten Uniserv/20181018 Domain+WZ2008 Hackathon INOBAS.csv"
+INPUT_FILE_PATH = "./20181018 Domain+WZ2008 Hackathon INOBAS.csv"
 
 def readInputData():
     inputData = []
@@ -13,7 +16,12 @@ def readInputData():
         reader = csv.reader(csvfile, delimiter=';', quotechar='|')
         for row in reader:
             if not row[0].startswith("http"):
-                row[0] = "http://" + row[0]
+                row[0] = "https://" + row[0]
+
+            if fileForUrlExists(row[0]):
+                print("already existing: " + row[0])
+                continue
+
             inputData.append({
                 'url': row[0],
                 'WZ2008 Section': row[1],
@@ -36,7 +44,7 @@ def loadAllSiteContents(urls):
     return contents
 
 def findUrlsInSite(htmlContent, mainUrl):
-    page = BeautifulSoup(htmlContent, features="lxml")
+    page = BeautifulSoup(htmlContent)
 
     urls = []
     for a in page.find_all('a', href=True):
@@ -48,20 +56,35 @@ def findUrlsInSite(htmlContent, mainUrl):
 
     return urls
 
-def saveHtml(url, html, mainUrl):
-    folderName = mainUrl
+def fileForUrlExists(url):
+    file = "./output/" + getFolderNameForUrl(url) + "/" + getFileNameForUrl(url)
+    return os.path.isfile(file) and not os.stat(file).st_size == 0
+
+def getFolderNameForUrl(url):
+    folderName = url
     try:
-        folderName = re.search(r'www\.(.*?)\.de', mainUrl).group(1)
+        folderName = re.search(r'www\.(.*?)\.de', url).group(1)
     except:
         pass
+
+    return folderName
+
+def getFileNameForUrl(url):
+    filename = url.split('/')[-1]
+    if filename == "": filename = url.split('/')[-2]
+    return filename + ".html"
+
+def saveHtml(url, html, mainUrl):
+    folderName = getFolderNameForUrl(mainUrl)
 
     if not os.path.exists("./output/" + folderName):
         os.makedirs("./output/" + folderName)
 
-    filename = url.split('/')[-1]
-    if filename == "": filename = url.split('/')[-2]
-    with open("./output/" + folderName + "/" + filename + '.html', "w")  as file:
-        file.write(str(html))
+    with open("./output/" + folderName + "/" + getFileNameForUrl(url), "w")  as file:
+        html = str(html)
+        if html.startswith("b'"):
+            html = html[2:]
+        file.write(html)
 
 
 print("reading input file...")
@@ -69,7 +92,7 @@ inputData = readInputData()
 inputUrls = [company['url'] for company in inputData]
 
 print("downloading main page contents...")
-siteContents = loadAllSiteContents(inputUrls[:10])
+siteContents = loadAllSiteContents(inputUrls)
 
 print("parsing main page contents...")
 i = 0
@@ -82,12 +105,13 @@ print("writing output file")
 with open("./output/output.json", "w")  as file:
     file.write(json.dumps(inputData, sort_keys=True, indent=4))
 
+'''
 print("downloading all subpages...")
 subpages = []
 for company in inputData:
     subpages.extend(company['subpages'])
 
-companySubPageContents = loadAllSiteContents(subpages)
+companySubPageContents = loadAllSiteContents2(subpages)
 
 print("saving all subpages...")
 subpageContentIndex = 0
@@ -96,3 +120,4 @@ for company in inputData:
         if subpageContentIndex >= len(companySubPageContents): break
         saveHtml(subpageUrl, companySubPageContents[subpageContentIndex], company['url'])
         subpageContentIndex += 1
+'''
