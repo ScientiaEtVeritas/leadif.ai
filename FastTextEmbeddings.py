@@ -1,6 +1,7 @@
 from gensim.models import KeyedVectors
 import nltk
 import numpy as np
+import re
 
 model = KeyedVectors.load_word2vec_format('wiki.de.vec')
 
@@ -14,8 +15,10 @@ class FastTextEmbeddings():
         vectors = []
         for token in tokens:
             try:
-                vectors.append(model.get_vector(token.lower()))
+                print(re.sub('[^A-Za-z0-9]+', '', token))
+                vectors.append(model.get_vector(re.sub('[^A-Za-z0-9]+', '', token).lower()))
             except:
+                print(token)
                 pass
         return vectors
 
