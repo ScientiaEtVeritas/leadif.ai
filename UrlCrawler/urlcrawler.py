@@ -1,6 +1,8 @@
 import requests
 from bs4 import BeautifulSoup
 
+import asyncio
+from aiohttp import ClientSession
 
 class UrlCrawler():
     def getURL(self, page):
@@ -17,9 +19,8 @@ class UrlCrawler():
         url = page[start_quote + 1: end_quote]
         return url, end_quote
 
-    def findUrls(self, url):
-        response = requests.get(url)
-        page = str(BeautifulSoup(response.content, features="lxml"))
+    def findUrls(self, htmlContent):
+        page = str(BeautifulSoup(htmlContent, features="lxml"))
 
         urls = []
         while True:
