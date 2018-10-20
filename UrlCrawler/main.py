@@ -12,25 +12,44 @@ INPUT_FILE_PATH = "./20181018 Domain+WZ2008 Hackathon INOBAS.csv"
 
 def readInputData():
     inputData = []
+
+    if os.path.isfile("./output/output.json"):
+        with open("./output/output.json", "r") as file:
+            inputData = json.loads(file.read())
+
     with open(INPUT_FILE_PATH, newline='', encoding='ISO-8859-1') as csvfile:
         reader = csv.reader(csvfile, delimiter=';', quotechar='|')
         for row in reader:
+            if row[0] == "Domain": continue
             if not row[0].startswith("http"):
                 row[0] = "https://" + row[0]
 
-            if fileForUrlExists(row[0]):
-                print("already existing: " + row[0])
-                continue
+            if urlExistsInData(inputData, row[0]): continue
 
             inputData.append({
                 'url': row[0],
                 'WZ2008 Section': row[1],
                 'WZ2008 Code': row[2],
-                'subpages': []
+                'subpages': [],
+                'text': '',
+                'image': ''
             })
 
-    inputData.pop(0)
     return inputData
+
+def urlExistsInData(data, url):
+    for company in data:
+        if company['url'] == url:
+            return True
+    return False
+
+def urlIsCompleteInData(data, url):
+    if not fileForUrlExists(url): return False
+    for company in data:
+        if company['url'] == url:
+            if "text" in company and company["text"] != "" and len(company['subpages']) != 0:
+                return True
+    return False
 
 def loadAllSiteContents(urls):
     rs = (grequests.get(u, timeout=2) for u in urls)
@@ -51,10 +70,17 @@ def findUrlsInSite(htmlContent, mainUrl):
         url = a['href']
         if not url.startswith("http"):
             url = mainUrl + "/" + url
+        url = url.replace(".de//", ".de/")
         if not url in urls and not " " in url:
-            urls.append(url.replace(".de//", ".de/"))
+            urls.append(url)
 
     return urls
+
+def getText(content):
+    page = BeautifulSoup(content)
+    text = page.get_text().replace('\\n', ' ').replace('\\r', '').replace('\\t', '')
+
+    return re.sub( '\s+', ' ', text )
 
 def fileForUrlExists(url):
     file = "./output/" + getFolderNameForUrl(url) + "/" + getFileNameForUrl(url)
@@ -86,10 +112,25 @@ def saveHtml(url, html, mainUrl):
             html = html[2:]
         file.write(html)
 
+def getIndexOfUrl(data, url):
+    i = 0
+    for company in data:
+        if company['url'] == url:
+            return i
+        i += 1
+    return False
+
 
 print("reading input file...")
 inputData = readInputData()
-inputUrls = [company['url'] for company in inputData]
+inputUrls = []
+
+#collect all urls which need to be downloaded
+for company in inputData:
+    if urlIsCompleteInData(inputData, company['url']):
+        print("already scrawled: " + company['url'])
+        continue
+    inputUrls.append(company['url'])
 
 print("downloading main page contents...")
 siteContents = loadAllSiteContents(inputUrls)
@@ -97,8 +138,12 @@ siteContents = loadAllSiteContents(inputUrls)
 print("parsing main page contents...")
 i = 0
 for siteContent in siteContents:
-    saveHtml(inputData[i]['url'], siteContent, inputData[i]['url'])
-    inputData[i]['subpages'] = findUrlsInSite(siteContent, inputData[i]['url'])
+    saveHtml(inputData[getIndexOfUrl(inputData, inputUrls[i])]['url'], siteContent, inputData[getIndexOfUrl(inputData, inputUrls[i])]['url'])
+    inputData[getIndexOfUrl(inputData, inputUrls[i])]['subpages'] = findUrlsInSite(siteContent, inputData[getIndexOfUrl(inputData, inputUrls[i])]['url'])
+    inputData[getIndexOfUrl(inputData, inputUrls[i])]['text'] = getText(siteContent)
+
+    imagePath = "./screenshots/" + inputData[getIndexOfUrl(inputData, inputUrls[i])]['url'].replace("http://", "").replace("https://", "").replace("/", "") + ".png"
+    inputData[getIndexOfUrl(inputData, inputUrls[i])]['image'] = imagePath
     i += 1
 
 print("writing output file")
