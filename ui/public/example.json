@@ -1,0 +1,39 @@
+{
+  "url": "https://usertimes.io",
+  "company": "Usertimes Solutions GmbH",
+  "address": [
+    {
+      "street": "Haid-und-Neu-Str. 7",
+      "country": "de",
+      "phone": "+49 721 9819 2925",
+    }
+  ],
+  "language": "de",
+  "social": {
+    "twitter": "twitter.com/usertimeshq",
+    "facebook": "facebook.com/usertimeshq",
+    "linkedin": "...",
+    "xing": "..."
+  },
+  "tags": [
+    "UX", "Usability", "More buzzwords"
+  ],
+  "photoUrls": [
+    "https://usertimes.de/wp-content/uploads/2018/06/ut_s_35.png",
+    "https://usertimes.de/wp-content/uploads/2018/03/Team_alt.jpg"
+  ],
+  "size": 6,
+  "wz": [
+    {
+      "section": "L",
+      "code": "6831",
+      "probability": 0.73
+    },
+    {
+      "section": "K",
+      "code": "6420",
+      "probability": 0.12
+    }
+  ]
+
+}
