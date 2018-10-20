@@ -25,8 +25,8 @@ def readInputData():
     return inputData
 
 def loadAllSiteContents(urls):
-    rs = (grequests.get(u, timeout=0.001) for u in urls)
-    responses = grequests.map(rs)
+    rs = (grequests.get(u, timeout=2) for u in urls)
+    responses = grequests.map(rs, size=5)
     contents = []
     for response in responses:
         if response is None:
@@ -43,8 +43,8 @@ def findUrlsInSite(htmlContent, mainUrl):
         url = a['href']
         if not url.startswith("http"):
             url = mainUrl + "/" + url
-        if not url in urls:
-            urls.append(url)
+        if not url in urls and not " " in url:
+            urls.append(url.replace(".de//", ".de/"))
 
     return urls
 
@@ -89,6 +89,7 @@ for company in inputData:
 
 companySubPageContents = loadAllSiteContents(subpages)
 
+print("saving all subpages...")
 subpageContentIndex = 0
 for company in inputData:
     for subpageUrl in company['subpages']:
