@@ -91,7 +91,14 @@ class WZ extends Component {
 
     // return JSON.stringify(sections, null, 2)
     return (
-      <Table celled collapsing basic='very' compact>
+      <Table collapsing basic='very' compact>
+        {/* <Table.Header>
+          <Table.Row>
+              <Table.HeaderCell colSpan='2'>
+                Top 3
+              </Table.HeaderCell>
+            </Table.Row>
+        </Table.Header> */}
         <Table.Body>
           { sections.map((section, idx) => (
             <Table.Row key={idx}>
@@ -128,7 +135,7 @@ class DataTable extends Component {
       },
       {
         key: 'Address',
-        value: data.address[0] && (
+        value: data.address && data.address[0] && (
           <span>
             { data.address[0].street } <br/>
             { data.address[0].city } <br/>
