@@ -17,4 +17,4 @@ async def screenshot(url):
     await page.screenshot({'path': '{0}/{1}.png'.format(screenshot_dir, name)})
     await browser.close()
 
-asyncio.get_event_loop().run_until_complete(screenshot('https://google.de'))
+# asyncio.get_event_loop().run_until_complete(screenshot('https://google.de'))
